@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_picker_flutter/models/database.helper.dart';
 import 'package:image_picker_flutter/models/user.model.dart';
@@ -39,11 +40,38 @@ class _MyHomePageState extends State<MyHomePage> {
   
   //Obtenemos el path de la imagen guardada
   Future getImageFromDB() async {   
-    User user = await DBProviderHelper.db.getUser(1);    
+    User user = await DBProviderHelper.db.getUser(1);   
+
+    if(user == null) 
+    {
+        return;
+    }
+
     File fileimage = await getLocalFile(user.avatar);
      setState(() {
        _image = fileimage;
     });
+  }
+
+  //Alerta
+  Future<void> myAlert(BuildContext context, String title, String content) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(content),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   //convertimos el path string a file
@@ -54,16 +82,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
   //obtenemos la imagen de la galeria
   Future getImage() async {
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+    var image = await ImagePicker.pickImage(source: ImageSource.gallery);        
+
     setState(() {
-      _image = image;
+      _image = image;      
     });
   }  
 
   //Guardamos la imagen en la base de datos
   Future saveImage() async {      
    var usuario = User(firstName: "jose", lastName: "sanchez", avatar: _image.path.toString(), blocked: false);
-    await DBProviderHelper.db.newUser(usuario);
+   try
+   {
+     await DBProviderHelper.db.newUser(usuario);
+     myAlert(this.context, "Aviso!", "Imagen guardada correctamente, cierra la aplicacion completamente y cuando la abras, la imagen guardada se cargara");
+   } catch (ex)
+   {
+     myAlert(this.context, "Aviso!", "Se ha presentado un error, intente nuevamente");
+     print(ex);
+   }
+    
   }
 
   //retornamos la imagen por default o la de la variable global
