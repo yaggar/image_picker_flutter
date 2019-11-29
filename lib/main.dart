@@ -27,14 +27,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> { 
+  //Variable global
   File _image;  
 
   @override
   void initState() {
     super.initState();  
+    //Precargamos la imagen
     getImageFromDB();     
   }
   
+  //Obtenemos el path de la imagen guardada
   Future getImageFromDB() async {   
     User user = await DBProviderHelper.db.getUser(1);    
     File fileimage = await getLocalFile(user.avatar);
@@ -43,11 +46,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  //convertimos el path string a file
   Future<File> getLocalFile(String filename) async {  
     File f = new File('$filename');
     return f;
   }
 
+  //obtenemos la imagen de la galeria
   Future getImage() async {
     var image = await ImagePicker.pickImage(source: ImageSource.gallery);
     setState(() {
@@ -55,12 +60,13 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }  
 
-  Future saveImage() async {   
-   //Guardamos la imagen en la  base de  datos
+  //Guardamos la imagen en la base de datos
+  Future saveImage() async {      
    var usuario = User(firstName: "jose", lastName: "sanchez", avatar: _image.path.toString(), blocked: false);
     await DBProviderHelper.db.newUser(usuario);
   }
 
+  //retornamos la imagen por default o la de la variable global
   Widget getDataImage(BuildContext context) {    
     if(_image == null)
     {

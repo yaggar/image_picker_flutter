@@ -1,3 +1,6 @@
+//Helper para nuestra base de datos y tabla de usuarios
+
+
 import 'dart:async';
 import 'dart:io';
 
@@ -35,12 +38,13 @@ class DBProviderHelper {
     });
   }
 
+  //Nuevo usuario
   newUser(User newUser) async {
     final db = await database;
-    //get the biggest id in the table
+    //obtenemos el id mas gande de la tabla y sumamos 1 digito para incrementar el id
     var table = await db.rawQuery("SELECT MAX(id)+1 as id FROM User");
     int id = table.first["id"];
-    //insert to the table using the new id
+    //inserta en la tabla con el nuevo id
     var raw = await db.rawInsert(
         "INSERT Into User (id,first_name,last_name,avatar,blocked)"
         " VALUES (?,?,?,?,?)",
@@ -48,6 +52,7 @@ class DBProviderHelper {
     return raw;
   }
 
+  //Cambio de bit en la columna block
   blockOrUnblock(User user) async {
     final db = await database;
     User blocked = User(
@@ -61,6 +66,7 @@ class DBProviderHelper {
     return res;
   }
 
+  //Actualización de usuario
   updateUser(User newUser) async {
     final db = await database;
     var res = await db.update("User", newUser.toMap(),
@@ -68,12 +74,14 @@ class DBProviderHelper {
     return res;
   }
 
+  //Obtenemos usaurio por id
   Future<User> getUser(int id) async {
     final db = await database;
     var res = await db.query("User", where: "id = ?", whereArgs: [id]);
     return res.isNotEmpty ? User.fromMap(res.first) : null;
   }
 
+  //Obtenemos lista de usuarios bloqueados
   Future<List<User>> getBlockedUsers() async {
     final db = await database;
 
@@ -86,6 +94,7 @@ class DBProviderHelper {
     return list;
   }
 
+  //Obtenemos lista de usuarios
   Future<List<User>> getAllUsers() async {
     final db = await database;
     var res = await db.query("User");
@@ -94,13 +103,16 @@ class DBProviderHelper {
     return list;
   }
 
+  //Eliminamos usuarios por id
   deleteUser(int id) async {
     final db = await database;
     return db.delete("User", where: "id = ?", whereArgs: [id]);
   }
 
+  //Borramos usuarios de la tabla
   deleteAll() async {
     final db = await database;
     db.rawDelete("Delete * from User");
   }
+
 }
